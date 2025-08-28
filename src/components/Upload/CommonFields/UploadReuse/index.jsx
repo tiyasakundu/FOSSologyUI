@@ -97,6 +97,7 @@ const UploadReuse = ({ reuse, handleChange }) => {
       <InputContainer
         type="select"
         name="reuseGroup"
+        // name="reuseGroup[a.zip]"
         id="upload-file-reuse-group"
         onChange={handleChange}
         options={reuseData.groupList}

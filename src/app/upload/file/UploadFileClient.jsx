@@ -46,6 +46,24 @@ import {
   AlertTitle,
   AlertDescription,
 } from '@/components/ui/alert';
+import {
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  TabsContent,
+} from "@/components/ui/tabs";
+import {
+  Sheet,
+  SheetTrigger,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+  SheetFooter,
+  SheetClose,
+} from "@/components/ui/sheet";
+
+import {Tooltip} from "@/components/Widgets";
 
 // Required functions for calling APIs
 import { createUploadFile } from "@/services/upload";
@@ -390,6 +408,109 @@ const UploadFileClient = () => {
             />
           </div>
         </div>
+
+        <div className="flex items-baseline gap-2 mb-3">
+          <span className="text-base font-medium text-[#101010] inline-flex items-center gap-1">
+            8. (Optional) Reuse
+            <Tooltip title="Copy clearing decisions if there is the same file hash between two files" />
+          </span>
+        </div>
+
+    <Sheet>
+      {/* Trigger Button */}
+      <SheetTrigger asChild>
+        <Button
+          type="button"
+          variant="outline"
+          className="font-medium text-[#004494] rounded border-[#004494] hover:bg-[#DEE7F2] hover:text-[#000B54]"
+        >
+          Set the Reuse Information
+        </Button>
+      </SheetTrigger>
+
+      {/* Right-side Overlay */}
+      <SheetContent side="right" className="w-[600px] sm:max-w-[700px] p-6">
+        <SheetHeader className="p-6 pb-2">
+          <SheetTitle className="font-semibold text-xl">
+            Reuse Configuration
+          </SheetTitle>
+        </SheetHeader>
+
+        {/* Tabs */}
+        <Tabs defaultValue="file1" className="w-full p-6">
+          <TabsList className="flex bg-[#EEEFFF] rounded-t h-10">
+            <TabsTrigger
+              value="file1"
+              className="flex-1 text-sm font-medium py-2 px-4
+                        data-[state=active]:bg-[#513DA8]
+                        data-[state=active]:text-white
+                        data-[state=inactive]:text-[#101010]
+                        rounded
+                        transition-colors"
+            >
+              File Name
+            </TabsTrigger>
+            <TabsTrigger
+              value="file2"
+              className="flex-1 text-sm font-medium py-2 px-4
+                        data-[state=active]:bg-[#513DA8]
+                        data-[state=active]:text-white
+                        data-[state=inactive]:text-[#101010]
+                        rounded
+                        transition-colors"
+            >
+              File Name
+            </TabsTrigger>
+            <TabsTrigger
+              value="file3"
+              className="flex-1 text-sm font-medium py-2 px-4
+                        data-[state=active]:bg-[#513DA8]
+                        data-[state=active]:text-white
+                        data-[state=inactive]:text-[#101010]
+                        rounded
+                        transition-colors"
+            >
+              File Name
+            </TabsTrigger>
+          </TabsList>
+
+          {/* Tab 1 Content */}
+          <TabsContent value="file1" className="space-y-6 pt-6">
+            {/* Section 1 */}
+            <div>
+                <CommonFields
+                  reuse={scanFileData.reuse}
+                  handleChange={handleChange}
+                  handleScanChange={handleScanChange}
+                />
+            </div>
+          </TabsContent>
+
+          {/* Tab 2 Content */}
+          <TabsContent value="file2" className="p-6">
+            {/* You can reuse the same structure or customize */}
+            <p className="text-sm text-gray-600">Content for File 2</p>
+          </TabsContent>
+
+          {/* Tab 3 Content */}
+          <TabsContent value="file3" className="p-6">
+            <p className="text-sm text-gray-600">Content for File 3</p>
+          </TabsContent>
+        </Tabs>
+
+        {/* Footer buttons */}
+        <div className="mt-6 flex justify-center gap-2">
+          <SheetClose asChild>
+            <Button variant="outline"
+            className="px-28 font-medium text-[#004494] rounded border-[#004494] hover:bg-[#DEE7F2] hover:text-[#000B54]">Cancel</Button>
+          </SheetClose>
+          <Button variant="default" 
+          className="px-28 bg-[#004494] text-white rounded hover:bg-[#00095C]">
+            Apply
+          </Button>
+        </div>
+      </SheetContent>
+    </Sheet>
 
         {/* Scancode Accordion */}
         <Accordion type="single" collapsible="w-full">
