@@ -131,7 +131,10 @@ const endpoints = {
   license: {
     get:                () => withBase("/license"),
     create:             () => withBase("/license"),          
-    getByShortName:     (shortName) => withBase(`/license/${shortName}`),
+    getByShortName:     (shortName) => withBase(`/license/${encodeURIComponent(shortName)}`),
+    updateByShortName: (shortName) => withBase(`/license/${encodeURIComponent(shortName)}`),
+    merge: (shortName) => withBase(`/license/merge/${encodeURIComponent(shortName)}`),
+    verify: (shortName) =>withBase(`/license/verify/${encodeURIComponent(shortName)}`),
     importCsv:          () => withBase("/license/import-csv"),
     importJson:         () => withBase("/license/import-json"),// api endpoint not exposed
     exportCsv:          () => withBase("/license/export-csv"),
@@ -142,8 +145,6 @@ const endpoints = {
     adminAcknowledgements: () => withBase("/license/adminacknowledgements"),
     standardComments:   () => withBase("/license/stdcomments"),
     suggest:            () => withBase("/license/suggest"),
-    verify:             (shortName) => withBase(`/license/verify/${shortName}`),
-    merge:              (shortName) => withBase(`/license/merge/${shortName}`),
     importRules:        () => withBase("/license/import-rules"),// api endpoint not exposed
     exportRules:        () => withBase("/license/export-rules"),// api endpoint not exposed
   },
@@ -151,6 +152,11 @@ const endpoints = {
   // Maintenance
   maintenance: {
     run: () => withBase("/maintenance"),
+  },
+
+  //Customise
+  customise: {
+    get: () => withBase("/customise"),
   },
 
   // Obligations
