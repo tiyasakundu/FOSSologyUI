@@ -46,6 +46,10 @@ export const fetchAllGroups = () => {
   });
 };
 
+export const fetchAllGroupsForManagement = () => {
+  return getAllGroupsApi(true).then((res) => res);
+};
+
 export const createGroup = (name) => {
   return createGroupApi(name).then((res) => res);
 };

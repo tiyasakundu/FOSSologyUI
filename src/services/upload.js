@@ -18,12 +18,16 @@
 import {
   createUploadApi,
   getUploadByIdApi,
+  getUploadFileByIdApi,
+  updateUploadByIdApi,
   createUploadVcsApi,
   createUploadUrlApi,
   createUploadServerApi,
   getUploadSummaryApi,
   getUploadLicenseApi,
   getUploadCopyrightsApi,
+  getItemTreeViewApi,
+  getTopItemApi,
 } from "@/api/upload";
 
 // Create Uploads from File
@@ -51,9 +55,38 @@ export const getUploadById = (uploadId, retries) => {
   return getUploadByIdApi({ uploadId, retries }).then((res) => res);
 };
 
+// Download upload file by upload ID
+export const getUploadFileById = (
+  uploadId,
+  retries = 0
+) => {
+  return getUploadFileByIdApi(
+    uploadId,
+    retries
+  ).then((res) => res);
+};
+
+export const updateUploadById = (
+  uploadId,
+  status,
+  comment = "",
+  assignee
+) => {
+  return updateUploadByIdApi({
+    uploadId,
+    status,
+    comment,
+    assignee,
+  }).then((res) => res);
+};
+
 // Getting a Upload Summary
 export const getUploadSummary = (uploadId) => {
   return getUploadSummaryApi({ uploadId }).then((res) => res);
+};
+
+export const getTopItem = (uploadId) => {
+  return getTopItemApi(uploadId).then((res) => res);
 };
 
 // Getting a Upload License
@@ -70,4 +103,37 @@ export const getUploadCopyrights = (uploadId) => {
     return getUploadCopyrightsApi({
         uploadId,
     }).then((res) => res);
+};
+
+// Getting the tree view for an upload item
+export const getItemTreeView = ({
+  uploadId,
+  itemId,
+  agentId,
+  tagId,
+  scanLicenseFilter,
+  editedLicenseFilter,
+  flatten,
+  sort,
+  search,
+  showQuick,
+  filterOpen,
+  page,
+  limit,
+}) => {
+  return getItemTreeViewApi({
+    uploadId,
+    itemId,
+    agentId,
+    tagId,
+    scanLicenseFilter,
+    editedLicenseFilter,
+    flatten,
+    sort,
+    search,
+    showQuick,
+    filterOpen,
+    page,
+    limit,
+  }).then((res) => res);
 };

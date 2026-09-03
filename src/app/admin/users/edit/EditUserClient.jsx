@@ -40,7 +40,7 @@ import {
   getAllUsersName,
   getUserByName,
 } from "@/services/users";
-import { fetchAllGroups } from "@/services/groups";
+import { fetchAllGroupsForManagement } from "@/services/groups";
 import { isAdmin } from "@/shared/authHelper";
 import {
   accessLevels,
@@ -192,7 +192,7 @@ const EditUserPage = () => {
 
   const fetchGroups = async () => {
     try {
-      const response = await fetchAllGroups();
+      const response = await fetchAllGroupsForManagement();
 
       setGroups(response);
     } catch (error) {

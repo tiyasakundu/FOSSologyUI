@@ -100,12 +100,11 @@ export const addUser = (data) => {
       monk: data.agents?.monk ?? false,
       nomos: data.agents?.nomos ?? false,
       ojo: data.agents?.ojo ?? false,
-      pkgagent: data.agents?.pkgagent ?? false,
+      package: data.agents?.pkgagent ?? false,
       reso: data.agents?.reso ?? false,
-      softwareHeritage: data.agents?.softwareHeritage ?? false,
+      heritage: data.agents?.softwareHeritage ?? false,
     },
   };
-console.log(payload);
   return addUserApi(payload).then((res) => res);
 };
 
@@ -124,7 +123,7 @@ export const editUserByName = (id, data) => {
     defaultBucketpool: data.defaultBucketpool ?? null,
     emailNotification: data.emailNotification,
     defaultVisibility: data.defaultVisibility,
-    userStatus: data.userStatus,
+    user_status: data.userStatus,
 
     ...(data.userPass ? { userPass: data.userPass } : {}),
 
@@ -139,13 +138,12 @@ export const editUserByName = (id, data) => {
       monk: data.agents?.monk ?? false,
       nomos: data.agents?.nomos ?? false,
       ojo: data.agents?.ojo ?? false,
-      pkgagent: data.agents?.pkgagent ?? false,
+      package: data.agents?.pkgagent ?? false,
       reso: data.agents?.reso ?? false,
-      softwareHeritage:
+      heritage:
         data.agents?.softwareHeritage ?? false,
     },
   };
-console.log(payload);
   return editUserByNameApi(id, payload).then((res) => res);
 };
 
