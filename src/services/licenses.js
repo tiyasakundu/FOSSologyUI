@@ -35,6 +35,11 @@ import {
   mutateStandardLicenseCommentsApi,
   getCompatibilityLicenseOptionsApi,
   getCustomiseDataApi,
+  getAdminLicenseCandidatesApi,
+  getSuggestedLicenseApi,
+  deleteAdminLicenseCandidateApi,
+  verifyLicenseApi,
+  mergeLicenseApi,
 } from "@/api/licenses";
 
 // Fetching the licenses with their kind i.e (candidate, main, all)
@@ -122,4 +127,49 @@ export const getCompatibilityLicenseOptions = () => {
   return getCompatibilityLicenseOptionsApi().then(
     (res) => res
   );
+};
+
+// Fetching admin license candidates
+export const getAdminLicenseCandidates = () => {
+  return getAdminLicenseCandidatesApi().then(
+    (res) => res
+  );
+};
+
+// Fetch suggested license from candidate reference text
+export const getSuggestedLicense = (
+  referenceText
+) => {
+  return getSuggestedLicenseApi(
+    referenceText
+  ).then((res) => res);
+};
+
+// Deleting an admin license candidate
+export const deleteAdminLicenseCandidate = (id) => {
+  return deleteAdminLicenseCandidateApi(id).then(
+    (res) => res
+  );
+};
+
+// Verify a license candidate
+export const verifyLicense = (
+  shortname,
+  parentShortname
+) => {
+  return verifyLicenseApi(
+    shortname,
+    parentShortname
+  ).then((res) => res);
+};
+
+// Merge a license candidate
+export const mergeLicense = (
+  shortname,
+  parentShortname
+) => {
+  return mergeLicenseApi(
+    shortname,
+    parentShortname
+  ).then((res) => res);
 };

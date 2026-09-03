@@ -278,3 +278,75 @@ export const getCompatibilityLicenseOptionsApi = () => {
     },
   });
 };
+
+// Fetching admin license candidates
+export const getAdminLicenseCandidatesApi = () => {
+  return sendRequest({
+    url: endpoints.license.adminCandidates(),
+    method: "GET",
+    headers: {
+      Authorization: getToken(),
+    },
+  });
+};
+
+// Get suggested license from candidate reference text
+export const getSuggestedLicenseApi = (
+  referenceText
+) => {
+  return sendRequest({
+    url: endpoints.license.suggest(),
+    method: "POST",
+    headers: {
+      Authorization: getToken(),
+    },
+    body: {
+      referenceText,
+    },
+  });
+};
+
+// Deleting an admin license candidate
+export const deleteAdminLicenseCandidateApi = (id) => {
+  return sendRequest({
+    url: endpoints.license.adminCandidateById(id),
+    method: "DELETE",
+    headers: {
+      Authorization: getToken(),
+    },
+  });
+};
+
+// Verify candidate as a new license or a variant
+export const verifyLicenseApi = (
+  shortname,
+  parentShortname
+) => {
+  return sendRequest({
+    url: endpoints.license.verify(shortname),
+    method: "PUT",
+    headers: {
+      Authorization: getToken(),
+    },
+    body: {
+      parentShortname,
+    },
+  });
+};
+
+// Merge candidate into an existing license
+export const mergeLicenseApi = (
+  shortname,
+  parentShortname
+) => {
+  return sendRequest({
+    url: endpoints.license.merge(shortname),
+    method: "PUT",
+    headers: {
+      Authorization: getToken(),
+    },
+    body: {
+      parentShortname,
+    },
+  });
+};
