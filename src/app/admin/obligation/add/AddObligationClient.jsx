@@ -309,7 +309,7 @@ const AddObligationClient = () => {
                     value: "yellow",
                     label: "Yellow",
                     className:
-                    "bg-yellow-100 text-neutral-900 border-yellow-100",
+                    "bg-yellow-500 text-neutral-900 border-yellow-500",
                 },
                 {
                     value: "red",

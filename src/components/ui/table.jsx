@@ -31,7 +31,7 @@ function Table({ className, ...props }) {
       <table
         data-slot="table"
         className={cn(
-          "w-full table-fixed border-collapse border border-neutral-400 text-sm",
+          "w-full table-fixed border-collapse border border-neutral-400 text-base",
           className
         )}
         {...props}
@@ -100,7 +100,7 @@ function TableHead({ className, ...props }) {
       className={cn(
         "h-10 bg-neutral-200 px-3 py-2",
         "text-left align-middle",
-        "text-sm font-semibold",
+        "text-base font-semibold",
         "whitespace-nowrap",
         "[&:has([role=checkbox])]:pr-0",
         "[&>[role=checkbox]]:translate-y-[2px]",
@@ -118,7 +118,7 @@ function TableCell({ className, ...props }) {
       className={cn(
         "px-3 py-2",
         "align-middle",
-        "text-sm",
+        "text-base",
         "whitespace-nowrap",
         "[&:has([role=checkbox])]:pr-0",
         "[&>[role=checkbox]]:translate-y-[2px]",
@@ -134,7 +134,7 @@ function TableCaption({ className, ...props }) {
     <caption
       data-slot="table-caption"
       className={cn(
-        "mt-4 text-sm text-muted-foreground",
+        "mt-4 text-base text-muted-foreground",
         className
       )}
       {...props}
