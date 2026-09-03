@@ -1,8 +1,7 @@
 /*
- Copyright (C) 2021 Aman Dwivedi (aman.dwivedi5@gmail.com), Shruti Agarwal (mail2shruti.ag@gmail.com)
  SPDX-FileCopyrightText: 2026 Tiyasa Kundu (tiyasakundu20@gmail.com)
 
- SPDX-License-Identifier: GPL-2.0
+SPDX-License-Identifier: GPL-2.0-only
 
  This program is free software; you can redistribute it and/or
  modify it under the terms of the GNU General Public License
@@ -48,11 +47,18 @@ const FolderTreeItem = ({
 
   const toggleExpand = (e) => {
     e.stopPropagation();
+
     if (!hasChildren) return;
+
     setExpandedFolders((prev) => {
       const next = new Set(prev);
-      if (next.has(folder.id)) next.delete(folder.id);
-      else next.add(folder.id);
+
+      if (next.has(folder.id)) {
+        next.delete(folder.id);
+      } else {
+        next.add(folder.id);
+      }
+
       return next;
     });
   };
@@ -61,7 +67,10 @@ const FolderTreeItem = ({
 
   useEffect(() => {
     if (selectedFolderId === folder.id && folderRef.current) {
-      folderRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+      folderRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
     }
   }, [selectedFolderId, folder.id]);
 
@@ -94,6 +103,7 @@ const FolderTreeItem = ({
             />
           </button>
         )}
+
         <span
           onClick={selectFolder}
           className={`cursor-pointer text-sm transition-colors duration-150 ${
@@ -126,16 +136,19 @@ const FolderTreeItem = ({
 
 const getParentIds = (folders, folderId) => {
   const parents = [];
-  let current = folders.find((f) => f.id === folderId);
+  let current = folders.find((folder) => folder.id === folderId);
+
   while (current && current.parent !== null) {
     parents.push(current.parent);
-    current = folders.find((f) => f.id === current.parent);
+    current = folders.find((folder) => folder.id === current.parent);
   }
+
   return parents;
 };
 
 const getExpandableFolderIds = (nodes) => {
   const ids = [];
+
   const traverse = (folders) => {
     folders.forEach((folder) => {
       if (folder.children.length > 0) {
@@ -144,55 +157,68 @@ const getExpandableFolderIds = (nodes) => {
       }
     });
   };
+
   traverse(nodes);
+
   return ids;
 };
+
+const NAVIGATION_ICON_FILTER =
+  "[filter:invert(17%)_sepia(99%)_saturate(2306%)_hue-rotate(204deg)_brightness(91%)_contrast(104%)]";
 
 const FolderNavigation = ({
   selectedFolderId,
   onFolderSelect,
-  folders: foldersProp,  
-  onRefresh,             
+  folders: foldersProp,
+  onRefresh,
+  collapsible = false,
+  collapsed = false,
+  onCollapsedChange,
 }) => {
   const [internalFolders, setInternalFolders] = useState([]);
-
-  const [searchValue, setSearchValue]         = useState("");
+  const [searchValue, setSearchValue] = useState("");
   const [expandedFolders, setExpandedFolders] = useState(new Set());
-  const [showDropdown, setShowDropdown]       = useState(false);
-  const [expandState, setExpandState]         = useState("expand");
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [expandState, setExpandState] = useState("expand");
 
   const dropdownRef = useRef(null);
 
   const folders = foldersProp ?? internalFolders;
 
-  const folderTree            = folders.length ? buildFolderTree(folders) : [];
-  const filteredFolders       = folders.filter((f) =>
-    f.name.toLowerCase().includes(searchValue.toLowerCase())
-  );
-  const expandableFolderIds   = getExpandableFolderIds(folderTree);
+  const folderTree = folders.length ? buildFolderTree(folders) : [];
 
+  const filteredFolders = folders.filter((folder) =>
+    folder.name.toLowerCase().includes(searchValue.toLowerCase())
+  );
+
+  const expandableFolderIds = getExpandableFolderIds(folderTree);
 
   useEffect(() => {
-    if (foldersProp) return; 
+    if (foldersProp) return;
+
     getAllFolders()
       .then((res) => {
         const data = res || [];
+
         setInternalFolders(data);
+
         const tree = buildFolderTree(data);
         setExpandedFolders(new Set(getExpandableFolderIds(tree)));
       })
       .catch(console.error);
   }, [foldersProp]);
 
-
-
   useEffect(() => {
     if (!foldersProp || !foldersProp.length) return;
+
     const tree = buildFolderTree(foldersProp);
-    const ids  = getExpandableFolderIds(tree);
+    const ids = getExpandableFolderIds(tree);
+
     setExpandedFolders((prev) => {
       const next = new Set(prev);
+
       ids.forEach((id) => next.add(id));
+
       return next;
     });
   }, [foldersProp]);
@@ -212,30 +238,90 @@ const FolderNavigation = ({
   }, [expandedFolders, expandableFolderIds]);
 
   useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+    const handleClickOutside = (event) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target)
+      ) {
         setShowDropdown(false);
       }
     };
+
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
   }, []);
 
+  if (collapsible && collapsed) {
+    return (
+      <button
+        type="button"
+        onClick={() => onCollapsedChange?.(false)}
+        className="flex h-10 w-16 shrink-0 items-center justify-between gap-1 rounded border border-tertiary1-800 bg-white py-1 pl-2 pr-1 transition-colors hover:bg-tertiary1-200 cursor-pointer"
+        aria-label="Expand folder navigation"
+      >
+        <Image
+          src="/assets/icons/Tree_20px.svg"
+          width={20}
+          height={20}
+          alt="Folder navigation"
+          className={NAVIGATION_ICON_FILTER}
+        />
+
+        <Image
+          src="/assets/icons/chevron_right/chevron_right_20px.svg"
+          width={20}
+          height={20}
+          alt=""
+          className={NAVIGATION_ICON_FILTER}
+        />
+      </button>
+    );
+  }
+
   return (
-    <div className="w-auto rounded-md border border-neutral-300 bg-white p-6">
-      <h2 className="mb-5 text-[18px] font-semibold">Folder Navigation</h2>
+    <div
+      className={`relative w-full rounded-md border border-neutral-300 bg-white p-6 ${
+        collapsible ? "min-w-[280px] max-w-[320px]" : ""
+      }`}
+    >
+      <div className="mb-5 flex items-center justify-between gap-4">
+        <h2 className="text-[18px] font-semibold">Folder Navigation</h2>
+
+        {collapsible && (
+          <button
+            type="button"
+            onClick={() => onCollapsedChange?.(true)}
+            className="flex h-6 w-6 shrink-0 items-center justify-center cursor-pointer"
+            aria-label="Collapse folder navigation"
+          >
+            <Image
+              src="/assets/icons/Close/Close_24px.svg"
+              width={24}
+              height={24}
+              alt=""
+              className={NAVIGATION_ICON_FILTER}
+            />
+          </button>
+        )}
+      </div>
 
       <ButtonSwitch
         value={expandState}
         onValueChange={(value) => {
           setExpandState(value);
+
           setExpandedFolders(
-            value === "expand" ? new Set(expandableFolderIds) : new Set()
+            value === "expand"
+              ? new Set(expandableFolderIds)
+              : new Set()
           );
         }}
         options={[
           { label: "Collapse All", value: "collapse" },
-          { label: "Expand All",   value: "expand"   },
+          { label: "Expand All", value: "expand" },
         ]}
         className="mb-6"
       />
@@ -254,12 +340,10 @@ const FolderNavigation = ({
         <Input
           value={searchValue}
           placeholder="Search folder"
-          className={`h-10 ${
-            !searchValue ? "pl-10" : "pl-3"
-          }`}
+          className={`h-10 ${!searchValue ? "pl-10" : "pl-3"}`}
           onFocus={() => setShowDropdown(true)}
-          onChange={(e) => {
-            setSearchValue(e.target.value);
+          onChange={(event) => {
+            setSearchValue(event.target.value);
             setShowDropdown(true);
           }}
         />
@@ -298,7 +382,9 @@ const FolderNavigation = ({
 
       <div className="h-auto overflow-y-auto">
         {folders.length === 0 ? (
-          <div className="text-sm text-muted-foreground">No folders found.</div>
+          <div className="text-sm text-muted-foreground">
+            No folders found.
+          </div>
         ) : (
           <ul className="tree-root">
             {folderTree.map((folder) => (

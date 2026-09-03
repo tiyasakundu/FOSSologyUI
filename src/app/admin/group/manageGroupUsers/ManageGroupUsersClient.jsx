@@ -43,9 +43,10 @@ import {
 } from "@/components/ui/table";
 
 import {
-  getAllGroups,
+  fetchAllGroupsForManagement,
   getGroupMembers,
   addGroupUser,
+  deleteGroupUser,
   updateGroupUserPermission,
 } from "@/services/groups";
 
@@ -53,6 +54,10 @@ import { getAllUsers } from "@/services/users";
 import { handleError } from "@/shared/helper";
 
 const permissions = [
+  {
+    value: "none",
+    label: "None",
+  },
   {
     value: "1",
     label: "Admin",
@@ -72,15 +77,11 @@ const ManageGroupUsersPage = () => {
   const [selectedGroup, setSelectedGroup] =
     useState("");
 
+  const [members, setMembers] = useState([]);
   const [availableUsers, setAvailableUsers] =
     useState([]);
-  const [rowOneUser, setRowOneUser] =
-    useState(null);
-  const [rowOnePermission, setRowOnePermission] =
-    useState("0");
-  const [rowTwoUser, setRowTwoUser] =
-    useState(null);
-  const [rowTwoPermission, setRowTwoPermission] =
+  const [newUserName, setNewUserName] = useState("");
+  const [newUserPermission, setNewUserPermission] =
     useState("0");
 
   const [loadingGroups, setLoadingGroups] =
@@ -107,57 +108,13 @@ const ManageGroupUsersPage = () => {
     );
   };
 
-  const findUserByName = (
-    users,
-    userName
-  ) => {
-    return (
-      users.find(
-        (user) =>
-          getUserName(user) === userName
-      ) || null
-    );
-  };
-
-  const findDefaultUser = (users) => {
-    return (
-      users.find(
-        (user) =>
-          getUserName(user) ===
-          "Default User"
-      ) ||
-      users.find(
-        (user) =>
-          user.description ===
-          "Default User when nobody is logged in"
-      ) ||
-      null
-    );
-  };
-
-  const findFossy = (users) => {
-    return (
-      users.find(
-        (user) =>
-          getUserName(user) ===
-          "fossy"
-      ) ||
-      users.find(
-        (user) =>
-          user.description ===
-          "Default Administrator"
-      ) ||
-      null
-    );
-  };
-
   useEffect(() => {
     const loadGroups = async () => {
       setLoadingGroups(true);
 
       try {
         const groups =
-          await getAllGroups();
+          await fetchAllGroupsForManagement();
 
         setGroupList(
           Array.isArray(groups)
@@ -180,11 +137,10 @@ const ManageGroupUsersPage = () => {
 
   useEffect(() => {
     if (!selectedGroup) {
-      setRowOneUser(null);
-      setRowOnePermission("0");
-      setRowTwoUser(null);
-      setRowTwoPermission("0");
+      setMembers([]);
       setAvailableUsers([]);
+      setNewUserName("");
+      setNewUserPermission("0");
       return;
     }
 
@@ -208,166 +164,6 @@ const ManageGroupUsersPage = () => {
           ? membersResponse
           : [];
 
-        const defaultUser =
-          findDefaultUser(users);
-
-        const fossy =
-          findFossy(users);
-
-        const memberMap = new Map(
-          members
-            .map((member) => {
-              const userName =
-                getUserName(member.user);
-
-              if (!userName) {
-                return null;
-              }
-
-              return [
-                userName,
-                member,
-              ];
-            })
-            .filter(Boolean)
-        );
-
-        if (
-          selectedGroup ===
-          "Default User"
-        ) {
-          const defaultUserMember =
-            defaultUser
-              ? memberMap.get(
-                  getUserName(defaultUser)
-                )
-              : null;
-
-          const fossyMember =
-            fossy
-              ? memberMap.get(
-                  getUserName(fossy)
-                )
-              : null;
-
-          setRowOneUser(
-            defaultUser
-          );
-
-          setRowOnePermission(
-            defaultUserMember
-              ? String(
-                  defaultUserMember.groupPerm
-                )
-              : "1"
-          );
-
-          setRowTwoUser(
-            fossy
-          );
-
-          setRowTwoPermission(
-            fossyMember
-              ? String(
-                  fossyMember.groupPerm
-                )
-              : "0"
-          );
-
-          setAvailableUsers([]);
-
-          return;
-        }
-
-        if (
-          selectedGroup ===
-          "fossy"
-        ) {
-          const defaultUserMember =
-            defaultUser
-              ? memberMap.get(
-                  getUserName(defaultUser)
-                )
-              : null;
-
-          const fossyMember =
-            fossy
-              ? memberMap.get(
-                  getUserName(fossy)
-                )
-              : null;
-
-          setRowOneUser(
-            defaultUser
-          );
-
-          setRowOnePermission(
-            defaultUserMember
-              ? String(
-                  defaultUserMember.groupPerm
-                )
-              : "0"
-          );
-
-          setRowTwoUser(
-            fossy
-          );
-
-          setRowTwoPermission(
-            fossyMember
-              ? String(
-                  fossyMember.groupPerm
-                )
-              : "1"
-          );
-
-          setAvailableUsers([]);
-
-          return;
-        }
-
-
-        const fossyMember =
-          fossy
-            ? memberMap.get(
-                getUserName(fossy)
-              )
-            : null;
-
-        setRowOneUser(
-          fossy
-        );
-
-        setRowOnePermission(
-          fossyMember
-            ? String(
-                fossyMember.groupPerm
-              )
-            : "1"
-        );
-
-        const secondRowMember =
-          members.find(
-            (member) =>
-              getUserName(member.user) !==
-              getUserName(fossy)
-          );
-
-        if (secondRowMember) {
-          setRowTwoUser(
-            secondRowMember.user
-          );
-
-          setRowTwoPermission(
-            String(
-              secondRowMember.groupPerm
-            )
-          );
-        } else {
-          setRowTwoUser(null);
-          setRowTwoPermission("0");
-        }
-
         const memberNames =
           new Set(
             members
@@ -379,24 +175,16 @@ const ManageGroupUsersPage = () => {
               .filter(Boolean)
           );
 
-        const usersForRowTwo =
-          users.filter((user) => {
-            const userName =
-              getUserName(user);
-
-            return (
-              userName &&
-              userName !==
-                getUserName(fossy) &&
-              !memberNames.has(
-                userName
-              )
-            );
-          });
-
+        setMembers(members);
         setAvailableUsers(
-          usersForRowTwo
+          users.filter((user) => {
+            const userName = getUserName(user);
+
+            return userName && !memberNames.has(userName);
+          })
         );
+        setNewUserName("");
+        setNewUserPermission("0");
       } catch (error) {
         handleError(
           error,
@@ -415,8 +203,7 @@ const ManageGroupUsersPage = () => {
   const handleExistingPermissionChange =
     async (
       user,
-      permission,
-      row
+      permission
     ) => {
       if (
         !selectedGroup ||
@@ -440,23 +227,35 @@ const ManageGroupUsersPage = () => {
       );
 
       try {
-        await updateGroupUserPermission({
-          groupName:
-            selectedGroup,
-          userName,
-          perm:
-            numericPermission,
-        });
-
-        if (row === 1) {
-          setRowOnePermission(
-            permission
+        if (permission === "none") {
+          await deleteGroupUser({
+            groupName: selectedGroup,
+            userName,
+          });
+          setMembers((previousMembers) =>
+            previousMembers.filter(
+              (member) => getUserName(member.user) !== userName
+            )
           );
-        }
+          setAvailableUsers((previousUsers) => [
+            ...previousUsers,
+            user,
+          ]);
+        } else {
+          await updateGroupUserPermission({
+            groupName:
+              selectedGroup,
+            userName,
+            perm:
+              numericPermission,
+          });
 
-        if (row === 2) {
-          setRowTwoPermission(
-            permission
+          setMembers((previousMembers) =>
+            previousMembers.map((member) =>
+              getUserName(member.user) === userName
+                ? { ...member, groupPerm: numericPermission }
+                : member
+            )
           );
         }
 
@@ -479,46 +278,39 @@ const ManageGroupUsersPage = () => {
       }
     };
 
-  const handleRowTwoUserSelect = async (userName) => {
-    const selectedUser = findUserByName(
-      availableUsers,
-      userName
+  const handleNewUserChange = async (userName) => {
+    const selectedUser = availableUsers.find(
+      (user) => getUserName(user) === userName
     );
 
     if (!selectedUser || !selectedGroup) {
       return;
     }
 
-    const selectedPermission = Number(
-      rowTwoPermission
-    );
-
-    const selectedUserName =
-      getUserName(selectedUser);
-
-    setRowTwoUser(selectedUser);
-
-    setUpdatingUser(selectedUserName);
+    setUpdatingUser(userName);
 
     try {
       await addGroupUser({
         groupName: selectedGroup,
-        userName: selectedUserName,
-        perm: selectedPermission,
+        userName,
+        perm: Number(newUserPermission),
       });
 
+      setMembers((previousMembers) => [
+        ...previousMembers,
+        { user: selectedUser, groupPerm: Number(newUserPermission) },
+      ]);
       setAvailableUsers((previousUsers) =>
         previousUsers.filter(
-          (user) =>
-            getUserName(user) !== selectedUserName
+          (user) => getUserName(user) !== userName
         )
       );
-
+      setNewUserName("");
+      setNewUserPermission("0");
       setMessage({
         type: "success",
         text: "User added to group successfully.",
       });
-
       setShowMessage(true);
     } catch (error) {
       handleError(error, setMessage);
@@ -528,92 +320,18 @@ const ManageGroupUsersPage = () => {
     }
   };
 
-  const handleRowTwoPermissionChange =
-    async (permission) => {
-      if (
-        !selectedGroup ||
-        !rowTwoUser
-      ) {
-        return;
-      }
-
-      const userName =
-        getUserName(rowTwoUser);
-
-      if (!userName) {
-        return;
-      }
-
-      const numericPermission =
-        Number(permission);
-
-      setRowTwoPermission(
-        permission
-      );
-
-      setUpdatingUser(
-        userName
-      );
-
-      try {
-        await addGroupUser({
-          groupName:
-            selectedGroup,
-          userName,
-          perm:
-            numericPermission,
-        });
-
-        setRowTwoUser(
-          rowTwoUser
-        );
-
-        setRowTwoPermission(
-          permission
-        );
-
-        setAvailableUsers(
-          (previousUsers) =>
-            previousUsers.filter(
-              (user) =>
-                getUserName(user) !==
-                userName
-            )
-        );
-
-        setMessage({
-          type: "success",
-          text:
-            "User added to group successfully.",
-        });
-
-        setShowMessage(true);
-      } catch (error) {
-        handleError(
-          error,
-          setMessage
-        );
-
-        setShowMessage(true);
-      } finally {
-        setUpdatingUser(null);
-      }
-    };
-
   const alertType =
-    message?.type === "danger" ||
-    message?.type === "error"
+    message?.type === "danger" || message?.type === "error"
       ? "Error"
       : message?.type === "success"
-      ? "Success"
-      : "Info";
+        ? "Success"
+        : "Info";
 
   return (
     <div className="pb-10">
-      {showMessage &&
-        message && (
-          <div className="mb-4">
-            <AlertBanner
+      {showMessage && message && (
+        <div className="mb-4">
+          <AlertBanner
               type={alertType}
               description={
                 message.text
@@ -691,156 +409,96 @@ const ManageGroupUsersPage = () => {
           </TableHeader>
 
           <TableBody>
-            {/* ROW 1 */}
+            {members.map((member) => {
+              const userName = getUserName(member.user);
+
+              return (
+                <TableRow key={userName}>
+                  <TableCell>{userName}</TableCell>
+                  <TableCell>
+                    <Select
+                      value={String(member.groupPerm)}
+                      onValueChange={(value) =>
+                        handleExistingPermissionChange(member.user, value)
+                      }
+                      disabled={
+                        !selectedGroup ||
+                        updatingUser !== null ||
+                        loadingUsers
+                      }
+                    >
+                      <SelectTrigger className="h-8 w-[266px]">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {permissions.map((permission) => (
+                          <SelectItem
+                            key={permission.value}
+                            value={permission.value}
+                          >
+                            {permission.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+
             <TableRow>
               <TableCell>
-                {rowOneUser
-                  ? getUserName(
-                      rowOneUser
-                    )
-                  : ""}
-              </TableCell>
-
-              <TableCell>
                 <Select
-                  value={
-                    rowOnePermission
-                  }
-                  onValueChange={(
-                    value
-                  ) =>
-                    handleExistingPermissionChange(
-                      rowOneUser,
-                      value,
-                      1
-                    )
-                  }
+                  value={newUserName}
+                  onValueChange={handleNewUserChange}
                   disabled={
-                    !rowOneUser ||
                     !selectedGroup ||
-                    updatingUser !==
-                      null ||
-                    loadingUsers
+                    loadingUsers ||
+                    updatingUser !== null
                   }
                 >
                   <SelectTrigger className="h-8 w-[266px]">
-                    <SelectValue />
+                    <SelectValue placeholder="Select user" />
                   </SelectTrigger>
-
                   <SelectContent>
-                    {permissions.map(
-                      (
-                        permission
-                      ) => (
-                        <SelectItem
-                          key={
-                            permission.value
-                          }
-                          value={
-                            permission.value
-                          }
-                        >
-                          {
-                            permission.label
-                          }
+                    {availableUsers.map((user) => {
+                      const userName = getUserName(user);
+                      const description = user.description || user.userDescription;
+
+                      return (
+                        <SelectItem key={userName} value={userName}>
+                          {description
+                            ? `${description} (${userName})`
+                            : userName}
                         </SelectItem>
-                      )
-                    )}
+                      );
+                    })}
                   </SelectContent>
                 </Select>
               </TableCell>
-            </TableRow>
-
-            {/* ROW 2 */}
-            <TableRow>
-              <TableCell>
-                {rowTwoUser ? (
-                  getUserName(
-                    rowTwoUser
-                  )
-                ) : (
-                  <Select
-                    value=""
-                    onValueChange={
-                      handleRowTwoUserSelect
-                    }
-                    disabled={
-                      !selectedGroup ||
-                      loadingUsers ||
-                      updatingUser !==
-                        null
-                    }
-                  >
-                    <SelectTrigger className="h-8 w-[266px]">
-                      <SelectValue placeholder="Select user" />
-                    </SelectTrigger>
-
-                    <SelectContent>
-                      {availableUsers.map(
-                        (user) => {
-                          const userName =
-                            getUserName(
-                              user
-                            );
-
-                          const description =
-                            user.description ||
-                            user.userDescription;
-
-                          return (
-                            <SelectItem
-                              key={
-                                userName
-                              }
-                              value={
-                                userName
-                              }
-                            >
-                              {description
-                                ? `${description} (${userName})`
-                                : userName}
-                            </SelectItem>
-                          );
-                        }
-                      )}
-                    </SelectContent>
-                  </Select>
-                )}
-              </TableCell>
-
               <TableCell>
                 <Select
-                  value={rowTwoPermission}
-                  onValueChange={
-                    rowTwoUser
-                      ? (value) =>
-                          handleExistingPermissionChange(
-                            rowTwoUser,
-                            value,
-                            2
-                          )
-                      : (value) =>
-                          setRowTwoPermission(value)
-                  }
+                  value={newUserPermission}
+                  onValueChange={setNewUserPermission}
                   disabled={
                     !selectedGroup ||
-                    updatingUser !== null ||
-                    loadingUsers
+                    loadingUsers ||
+                    updatingUser !== null
                   }
                 >
                   <SelectTrigger className="h-8 w-[266px]">
-                    <SelectValue />
+                    <SelectValue placeholder="Select permission" />
                   </SelectTrigger>
-
                   <SelectContent>
-                    {permissions.map((permission) => (
-                      <SelectItem
-                        key={permission.value}
-                        value={permission.value}
-                      >
+                    {permissions
+                      .filter(
+                        (permission) => permission.value !== "none"
+                      )
+                      .map((permission) => (
+                      <SelectItem key={permission.value} value={permission.value}>
                         {permission.label}
                       </SelectItem>
-                    ))}
+                      ))}
                   </SelectContent>
                 </Select>
               </TableCell>
